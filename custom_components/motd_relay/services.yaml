@@ -1,0 +1,216 @@
+publish:
+  name: Publish MOTD
+  description: >-
+    Publish a MOTD status update to MQTT. At least one of `service` or
+    `source` must be set. Topic is `<topic_prefix>/<service>-<source>`
+    when both are given, otherwise `<topic_prefix>/<service>` or
+    `<topic_prefix>/<source>`. Retained.
+  fields:
+    service:
+      name: Service
+      description: >-
+        Optional service identifier. Combined with `source` to form the
+        dedup key. Must match `[A-Za-z0-9_-]+`.
+      example: homeassistant
+      selector:
+        text:
+    source:
+      name: Source
+      description: >-
+        Optional sub-source identifier. Reuse it to supersede a previous
+        status. Must match `[A-Za-z0-9_-]+`. At least one of `service`
+        or `source` is required.
+      example: front_door
+      selector:
+        text:
+    level:
+      name: Level
+      description: Severity of the status.
+      required: true
+      selector:
+        select:
+          options:
+            - OK
+            - Info
+            - Warning
+            - Critical
+    summary:
+      name: Summary
+      description: One-line summary, shown as the entry title.
+      required: true
+      example: Front door unlocked
+      selector:
+        text:
+    details:
+      name: Details
+      description: >-
+        Optional details. May be a string or a list; lists are joined
+        with " | ".
+      example:
+        - battery=78%
+        - last_user=alice
+      selector:
+        object:
+    alert_markdown:
+      name: Alert markdown
+      description: Optional markdown rendered into the MOTD alert sensor.
+      example: "**Front door** unlocked"
+      selector:
+        text:
+          multiline: true
+    duration:
+      name: Duration
+      description: >-
+        Optional message TTL. When set, the integration emits an
+        `expires_at` field; the palantir consumer drops the entry once
+        the deadline passes.
+      example: "00:05:00"
+      selector:
+        duration:
+
+ok:
+  name: Publish MOTD (OK)
+  description: Shortcut for `publish` with level=OK.
+  fields:
+    service:
+      name: Service
+      example: homeassistant
+      selector:
+        text:
+    source:
+      name: Source
+      example: front_door
+      selector:
+        text:
+    summary:
+      name: Summary
+      required: true
+      selector:
+        text:
+    details:
+      name: Details
+      selector:
+        object:
+    alert_markdown:
+      name: Alert markdown
+      selector:
+        text:
+          multiline: true
+    duration:
+      name: Duration
+      selector:
+        duration:
+
+info:
+  name: Publish MOTD (Info)
+  description: Shortcut for `publish` with level=Info.
+  fields:
+    service:
+      name: Service
+      example: homeassistant
+      selector:
+        text:
+    source:
+      name: Source
+      selector:
+        text:
+    summary:
+      name: Summary
+      required: true
+      selector:
+        text:
+    details:
+      name: Details
+      selector:
+        object:
+    alert_markdown:
+      name: Alert markdown
+      selector:
+        text:
+          multiline: true
+    duration:
+      name: Duration
+      selector:
+        duration:
+
+warning:
+  name: Publish MOTD (Warning)
+  description: Shortcut for `publish` with level=Warning.
+  fields:
+    service:
+      name: Service
+      example: homeassistant
+      selector:
+        text:
+    source:
+      name: Source
+      selector:
+        text:
+    summary:
+      name: Summary
+      required: true
+      selector:
+        text:
+    details:
+      name: Details
+      selector:
+        object:
+    alert_markdown:
+      name: Alert markdown
+      selector:
+        text:
+          multiline: true
+    duration:
+      name: Duration
+      selector:
+        duration:
+
+critical:
+  name: Publish MOTD (Critical)
+  description: Shortcut for `publish` with level=Critical.
+  fields:
+    service:
+      name: Service
+      example: homeassistant
+      selector:
+        text:
+    source:
+      name: Source
+      selector:
+        text:
+    summary:
+      name: Summary
+      required: true
+      selector:
+        text:
+    details:
+      name: Details
+      selector:
+        object:
+    alert_markdown:
+      name: Alert markdown
+      selector:
+        text:
+          multiline: true
+    duration:
+      name: Duration
+      selector:
+        duration:
+
+clear:
+  name: Clear MOTD
+  description: >-
+    Drop the retained MOTD message for the given service/source by
+    publishing an empty retained payload to its topic. At least one of
+    `service` or `source` must be set.
+  fields:
+    service:
+      name: Service
+      example: homeassistant
+      selector:
+        text:
+    source:
+      name: Source
+      example: front_door
+      selector:
+        text:

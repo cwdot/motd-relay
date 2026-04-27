@@ -1,0 +1,26 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "MOTD Relay",
+        "description": "Configure how Home Assistant publishes status messages onto palantir's MOTD MQTT bus.",
+        "data": {
+          "topic_prefix": "Topic prefix"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "MOTD Relay is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "MOTD Relay options",
+        "data": {
+          "topic_prefix": "Topic prefix"
+        }
+      }
+    }
+  }
+}
