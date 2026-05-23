@@ -49,7 +49,7 @@ All publish-family services accept the same fields except for level:
 | `service` | one of `service`/`source` is required | Service identifier. Must match `[A-Za-z0-9_-]+`. |
 | `source` | one of `service`/`source` is required | Sub-source identifier; reuse it to supersede a previous status. Must match `[A-Za-z0-9_-]+`. |
 | `summary` | yes | One-line summary. |
-| `details` | no | String, or list (joined with ` \| `). |
+| `details` | no | List of strings, or a single string (wrapped into a one-element list). |
 | `alert_markdown` | no | Markdown rendered into palantir's MOTD alert sensor. |
 | `duration` | no | Time period (e.g. `"00:05:00"`, `30s`). Adds an `expires_at` to the payload; palantir drops the entry once the deadline passes. |
 
@@ -73,7 +73,7 @@ Produces this retained publish on `palantir/motd/input/front_door`:
   "source": "front_door",
   "level": "Warning",
   "summary": "Front door unlocked for 10 min",
-  "details": "battery=78% | last_user=alice",
+  "details": ["battery=78%", "last_user=alice"],
   "version": "1745764421-1",
   "timestamp": "2026-04-27T08:53:41-04:00",
   "expires_at": "2026-04-27T08:58:41-04:00"

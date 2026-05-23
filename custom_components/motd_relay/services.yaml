@@ -44,8 +44,8 @@ publish:
     details:
       name: Details
       description: >-
-        Optional details. May be a string or a list; lists are joined
-        with " | ".
+        Optional details. List of strings (preferred), or a single string
+        (wrapped into a one-element list).
       example:
         - battery=78%
         - last_user=alice

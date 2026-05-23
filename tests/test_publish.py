@@ -37,7 +37,7 @@ async def test_publish_builds_topic_and_payload(
     assert payload["source"] == "front_door"
     assert payload["level"] == "Warning"
     assert payload["summary"] == "Door unlocked"
-    assert payload["details"] == "battery=78% | user=alice"
+    assert payload["details"] == ["battery=78%", "user=alice"]
     assert payload["alert_markdown"] == "**Front door** unlocked"
     assert payload["version"].count("-") == 1
     assert "timestamp" in payload
@@ -96,7 +96,7 @@ async def test_publish_without_service_or_source_errors(
     assert mock_publish.await_count == 0
 
 
-async def test_publish_string_details_passes_through(
+async def test_publish_string_details_wrapped_to_list(
     hass: HomeAssistant, configured_entry, mock_publish
 ) -> None:
     await hass.services.async_call(
@@ -111,7 +111,7 @@ async def test_publish_string_details_passes_through(
         blocking=True,
     )
     _, payload, _ = last_call(mock_publish)
-    assert payload["details"] == "single line"
+    assert payload["details"] == ["single line"]
 
 
 async def test_publish_empty_details_when_omitted(
@@ -124,7 +124,7 @@ async def test_publish_empty_details_when_omitted(
         blocking=True,
     )
     _, payload, _ = last_call(mock_publish)
-    assert payload["details"] == ""
+    assert payload["details"] == []
 
 
 async def test_publish_uses_custom_topic_prefix(

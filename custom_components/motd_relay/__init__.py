@@ -64,14 +64,14 @@ def _validate_name(value: Any, field: str) -> str:
     return value
 
 
-def _normalize_details(value: Any) -> str:
+def _normalize_details(value: Any) -> list[str]:
     if value is None:
-        return ""
+        return []
     if isinstance(value, str):
-        return value
+        return [value] if value else []
     if isinstance(value, list | tuple):
-        return " | ".join(str(item) for item in value)
-    return str(value)
+        return [str(item) for item in value]
+    return [str(value)]
 
 
 _PUBLISH_FIELDS_SCHEMA = vol.Schema(
