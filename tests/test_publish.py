@@ -170,3 +170,106 @@ async def test_publish_rejects_unsafe_names(
     with pytest.raises(vol.Invalid):
         await hass.services.async_call(DOMAIN, "publish", payload, blocking=True)
     assert mock_publish.await_count == 0
+
+
+async def test_publish_url_emitted_as_link(
+    hass: HomeAssistant, configured_entry, mock_publish
+) -> None:
+    await hass.services.async_call(
+        DOMAIN,
+        "publish",
+        {
+            "service": "ha",
+            "level": "Warning",
+            "summary": "camera offline",
+            "url": "https://home.example.com/lovelace/cameras",
+        },
+        blocking=True,
+    )
+    _, payload, _ = last_call(mock_publish)
+    assert payload["link"] == "https://home.example.com/lovelace/cameras"
+    assert "actions" not in payload
+
+
+async def test_publish_actions_passed_through(
+    hass: HomeAssistant, configured_entry, mock_publish
+) -> None:
+    await hass.services.async_call(
+        DOMAIN,
+        "publish",
+        {
+            "service": "ha",
+            "level": "Critical",
+            "summary": "door forced",
+            "url": "https://home.example.com/lovelace/security",
+            "actions": [
+                {
+                    "action": "URI",
+                    "title": "Open camera",
+                    "uri": "https://home.example.com/lovelace/cameras",
+                    "icon": "mdi:cctv",
+                },
+                {
+                    "action": "DISMISS_ALERT",
+                    "title": "Dismiss",
+                    "destructive": True,
+                },
+            ],
+        },
+        blocking=True,
+    )
+    _, payload, _ = last_call(mock_publish)
+    assert payload["link"] == "https://home.example.com/lovelace/security"
+    assert payload["actions"] == [
+        {
+            "action": "URI",
+            "title": "Open camera",
+            "uri": "https://home.example.com/lovelace/cameras",
+            "icon": "mdi:cctv",
+        },
+        {
+            "action": "DISMISS_ALERT",
+            "title": "Dismiss",
+            "destructive": True,
+        },
+    ]
+
+
+async def test_publish_url_and_actions_omitted(
+    hass: HomeAssistant, configured_entry, mock_publish
+) -> None:
+    await hass.services.async_call(
+        DOMAIN,
+        "publish",
+        {"service": "ha", "level": "OK", "summary": "ok"},
+        blocking=True,
+    )
+    _, payload, _ = last_call(mock_publish)
+    assert "link" not in payload
+    assert "actions" not in payload
+
+
+@pytest.mark.parametrize(
+    "action",
+    [
+        {"title": "Missing action id"},
+        {"action": "URI"},  # missing title
+        {"action": "URI", "title": "Bad flag", "destructive": "nope"},
+    ],
+)
+async def test_publish_rejects_malformed_actions(
+    hass: HomeAssistant, configured_entry, mock_publish, action
+) -> None:
+    with pytest.raises(vol.Invalid):
+        await hass.services.async_call(
+            DOMAIN,
+            "publish",
+            {
+                "service": "ha",
+                "level": "OK",
+                "summary": "ok",
+                "actions": [action],
+            },
+            blocking=True,
+        )
+    assert mock_publish.await_count == 0

@@ -25,6 +25,12 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv
 
 from .const import (
+    ACTION_ACTION,
+    ACTION_DESTRUCTIVE,
+    ACTION_ICON,
+    ACTION_TITLE,
+    ACTION_URI,
+    ATTR_ACTIONS,
     ATTR_ALERT_MARKDOWN,
     ATTR_DETAILS,
     ATTR_DURATION,
@@ -32,6 +38,7 @@ from .const import (
     ATTR_SERVICE,
     ATTR_SOURCE,
     ATTR_SUMMARY,
+    ATTR_URL,
     CONF_TOPIC_PREFIX,
     DEFAULT_TOPIC_PREFIX,
     DOMAIN,
@@ -74,6 +81,19 @@ def _normalize_details(value: Any) -> list[str]:
     return [str(value)]
 
 
+# A single actionable-notification button. Shape mirrors palantir's
+# notifications.NotificationActionButton so the JSON deserializes there
+# unchanged; the same contract renders on both iOS and Android.
+_ACTION_SCHEMA = vol.Schema(
+    {
+        vol.Required(ACTION_ACTION): cv.string,
+        vol.Required(ACTION_TITLE): cv.string,
+        vol.Optional(ACTION_URI): cv.string,
+        vol.Optional(ACTION_ICON): cv.string,
+        vol.Optional(ACTION_DESTRUCTIVE): cv.boolean,
+    }
+)
+
 _PUBLISH_FIELDS_SCHEMA = vol.Schema(
     {
         vol.Optional(ATTR_SERVICE): vol.All(cv.string, lambda v: _validate_name(v, ATTR_SERVICE)),
@@ -82,6 +102,8 @@ _PUBLISH_FIELDS_SCHEMA = vol.Schema(
         vol.Optional(ATTR_DETAILS): vol.Any(cv.string, [cv.string]),
         vol.Optional(ATTR_ALERT_MARKDOWN): cv.string,
         vol.Optional(ATTR_DURATION): cv.time_period,
+        vol.Optional(ATTR_URL): cv.string,
+        vol.Optional(ATTR_ACTIONS): [_ACTION_SCHEMA],
     }
 )
 
@@ -181,6 +203,8 @@ async def _async_publish(hass: HomeAssistant, level: str, call: ServiceCall) -> 
     details = _normalize_details(data.get(ATTR_DETAILS))
     alert_markdown = data.get(ATTR_ALERT_MARKDOWN, "") or ""
     duration: timedelta | None = data.get(ATTR_DURATION)
+    url = data.get(ATTR_URL, "") or ""
+    actions = data.get(ATTR_ACTIONS) or []
 
     version = await relay.versioner.next()
 
@@ -199,6 +223,15 @@ async def _async_publish(hass: HomeAssistant, level: str, call: ServiceCall) -> 
         payload["alert_markdown"] = alert_markdown
     if duration is not None:
         payload["expires_at"] = _expiry_iso(duration)
+    # `url` maps to palantir's `link` — the URL the rendered MOTD title links
+    # to, and the URL a fired push notification opens on tap.
+    if url:
+        payload["link"] = url
+    # `actions` opts the message into a push notification: palantir forwards
+    # these buttons to its configured notify targets. Already validated into
+    # the wire shape, so pass them through unchanged.
+    if actions:
+        payload["actions"] = actions
 
     topic = _build_topic(relay.topic_prefix, service_name, source)
     await mqtt.async_publish(

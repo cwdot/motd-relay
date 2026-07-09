@@ -67,6 +67,33 @@ publish:
       example: "00:05:00"
       selector:
         duration:
+    url:
+      name: URL
+      description: >-
+        Optional URL the rendered MOTD title links to. When the message
+        also carries `actions`, this is the URL the push notification
+        opens when tapped. Emitted on the wire as `link`.
+      example: https://home.example.com/lovelace/security
+      selector:
+        text:
+    actions:
+      name: Actions
+      description: >-
+        Optional list of actionable-notification buttons. Presence of
+        `actions` makes palantir fire a push notification to its
+        configured targets. Each action is a mapping with `action` and
+        `title` (required) plus optional `uri`, `icon`, and
+        `destructive`. Use `action: URI` with `uri` to open a URL or
+        dashboard path. The contract is identical on iOS and Android.
+      example:
+        - action: URI
+          title: Open camera
+          uri: https://home.example.com/lovelace/cameras
+        - action: DISMISS_ALERT
+          title: Dismiss
+          destructive: true
+      selector:
+        object:
 
 ok:
   name: Publish MOTD (OK)
@@ -100,6 +127,14 @@ ok:
       name: Duration
       selector:
         duration:
+    url:
+      name: URL
+      selector:
+        text:
+    actions:
+      name: Actions
+      selector:
+        object:
 
 info:
   name: Publish MOTD (Info)
@@ -132,6 +167,14 @@ info:
       name: Duration
       selector:
         duration:
+    url:
+      name: URL
+      selector:
+        text:
+    actions:
+      name: Actions
+      selector:
+        object:
 
 warning:
   name: Publish MOTD (Warning)
@@ -164,6 +207,14 @@ warning:
       name: Duration
       selector:
         duration:
+    url:
+      name: URL
+      selector:
+        text:
+    actions:
+      name: Actions
+      selector:
+        object:
 
 critical:
   name: Publish MOTD (Critical)
@@ -196,6 +247,14 @@ critical:
       name: Duration
       selector:
         duration:
+    url:
+      name: URL
+      selector:
+        text:
+    actions:
+      name: Actions
+      selector:
+        object:
 
 clear:
   name: Clear MOTD

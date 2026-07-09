@@ -52,6 +52,27 @@ All publish-family services accept the same fields except for level:
 | `details` | no | List of strings, or a single string (wrapped into a one-element list). |
 | `alert_markdown` | no | Markdown rendered into palantir's MOTD alert sensor. |
 | `duration` | no | Time period (e.g. `"00:05:00"`, `30s`). Adds an `expires_at` to the payload; palantir drops the entry once the deadline passes. |
+| `url` | no | URL the rendered MOTD title links to. When the message also carries `actions`, this is the URL a push notification opens on tap. Emitted on the wire as `link`. |
+| `actions` | no | List of actionable-notification buttons. Presence of `actions` makes palantir fire a push notification (to its configured notify targets). See below. |
+
+### Actions
+
+Each action mirrors a Home Assistant companion [actionable
+notification](https://companion.home-assistant.io/docs/notifications/actionable-notifications)
+button — the contract is identical on iOS and Android:
+
+| Key | Required | Notes |
+|---|---|---|
+| `action` | yes | Action identifier received in the `mobile_app_notification_action` event. Use `URI` to open `uri` directly. |
+| `title` | yes | User-visible button label. |
+| `uri` | no | Opened when `action` is `URI` (a URL or a Lovelace path like `/lovelace/cameras`). Also renders as a bullet link in the MOTD details sensor. |
+| `icon` | no | Android button icon, e.g. `mdi:cctv`. |
+| `destructive` | no | iOS: render the button in red. |
+
+Actions ride through palantir unchanged: on receipt, palantir forwards `url`
+and `actions` as a push notification to every notify target its `notifier`
+plugin is configured with. The push fires only when the message's content
+changes (not on routine republishes).
 
 ### Example
 
@@ -77,6 +98,43 @@ Produces this retained publish on `palantir/motd/input/front_door`:
   "version": "1745764421-1",
   "timestamp": "2026-04-27T08:53:41-04:00",
   "expires_at": "2026-04-27T08:58:41-04:00"
+}
+```
+
+### Example with URL + actions
+
+```yaml
+- service: motd_relay.critical
+  data:
+    source: front_door
+    summary: Front door forced open
+    url: https://home.example.com/lovelace/security
+    actions:
+      - action: URI
+        title: Open camera
+        uri: https://home.example.com/lovelace/cameras
+        icon: mdi:cctv
+      - action: DISMISS_ALERT
+        title: Dismiss
+        destructive: true
+```
+
+Adds `link` and `actions` to the payload; palantir renders the entry and
+forwards a push notification carrying the URL and buttons:
+
+```json
+{
+  "source": "front_door",
+  "level": "Critical",
+  "summary": "Front door forced open",
+  "details": [],
+  "version": "1745764421-2",
+  "timestamp": "2026-04-27T08:53:41-04:00",
+  "link": "https://home.example.com/lovelace/security",
+  "actions": [
+    {"action": "URI", "title": "Open camera", "uri": "https://home.example.com/lovelace/cameras", "icon": "mdi:cctv"},
+    {"action": "DISMISS_ALERT", "title": "Dismiss", "destructive": true}
+  ]
 }
 ```
 

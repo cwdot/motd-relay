@@ -24,3 +24,14 @@ ATTR_SUMMARY = "summary"
 ATTR_DETAILS = "details"
 ATTR_ALERT_MARKDOWN = "alert_markdown"
 ATTR_DURATION = "duration"
+ATTR_URL = "url"
+ATTR_ACTIONS = "actions"
+
+# Keys of a single action button on the wire. Mirrors palantir's
+# notifications.NotificationActionButton JSON (uniform across iOS/Android):
+# https://companion.home-assistant.io/docs/notifications/actionable-notifications
+ACTION_ACTION = "action"
+ACTION_TITLE = "title"
+ACTION_URI = "uri"
+ACTION_ICON = "icon"
+ACTION_DESTRUCTIVE = "destructive"
